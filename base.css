@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.ss-action {
+    cursor: pointer;
+}
+
+#map-wrapper {
+    display: flex;
+}
+
+#map {
+    height: 100vh;
+    width: 80vw;
+}
+
+#map-editor {
+    height: 100vh;
+    width: 20vw;
+}

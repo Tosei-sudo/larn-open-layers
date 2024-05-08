@@ -1,0 +1,12 @@
+<div ng-controller="myCtrl as c" ng-init="c.initMap()" id="map-wrapper">
+    <div id="map"></div>
+    <div id="map-editor">
+        <div id="map-editor-header">
+            <h2>Map Editor</h2>
+        </div>
+        <div>
+            <input ng-show="!c.isEdting" type="button" value="EDIT" ng-click="c.changeEdit()">
+            <input ng-show="c.isEdting" type="button" value="SAVE" ng-click="c.changeEdit()">
+        </div>
+    </div>
+</div>
