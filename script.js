@@ -1,4 +1,4 @@
-const app = angular.module("myApp", ["ngRoute"]);
+let app = angular.module("myApp", ["ngRoute"]);
 
 app.constant("appConfig", {
     apiUrl: "./data.geojson",
@@ -108,7 +108,7 @@ app.service("MapService", [
 ]);
 // use ng-cloak to prevent the AngularJS html template from being displayed until all the AngularJS library has been loaded.
 
-app.controller("myCtrl", function ($http, $scope, appConfig, MapService) {
+app.controller("myCtrl", function ($http, $scope, appConfig, MapService, notificationService) {
     this.test = "test";
     this.isEdting = false;
 
@@ -298,6 +298,15 @@ app.controller("myCtrl", function ($http, $scope, appConfig, MapService) {
             ),
             7);
     };
+
+    this.changeEdit = () => {
+        this.isEdting = !this.isEdting;
+        notificationService.pushMessage("Edit mossssssssssssde: " + this.isEdting, {
+            onClicked: () => {
+                window.open("https://www.google.com");
+            }
+        });
+    };
 });
 
 // spa routing
@@ -310,4 +319,119 @@ app.config(function ($routeProvider) {
         .otherwise({
             redirectTo: "/",
         });
+});
+
+const ngNotificationHtml = `
+<div class="notification-wrap">
+    <div ng-repeat="message in messages"  ng-click="message.remove(false, true)">
+        <div class="notification" ng-class="message.type">
+            <span>{{message.text}}</span>
+        </div>
+    </div>
+</div>
+<style>
+    .notification-wrap {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    .notification {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        margin: 5px;
+        border: 1px solid #333;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    .info {
+        background-color: lightblue;
+    }
+    .info:hover {
+        background-color: blue;
+    }
+    .error {
+        background-color: lightcoral;
+    }
+    .error:hover {
+        background-color: red;
+    }
+    .warning {
+        background-color: lightgoldenrodyellow;
+    }
+    .warning:hover {
+        background-color: goldenrod;
+    }
+    .success {
+        background-color: lightgreen;
+    }
+    .success:hover {
+        background-color: green;
+        color: white;
+    }
+    /* animetions */
+    .notification {
+        animation: slideIn 0.2s forwards;
+    }
+    @keyframes slideIn {
+        0% {
+            transform: translateY(-100%);
+        }
+        100% {
+            transform: translateY(0);
+        }
+    }
+</style>
+`;
+
+app.directive("ngNotification", function () {
+    return {
+        restrict: "E",
+        template: ngNotificationHtml,
+        controller: function ($scope, notificationService) {
+            vm = $scope;
+
+            vm.messages = notificationService.getMessages();
+            notificationService.updateHook = function (doApply = false) {
+                vm.messages = notificationService.getMessages();
+
+                if (doApply) {
+                    $scope.$apply();
+                }
+            };
+        }
+    };
+})
+app.service("notificationService", function () {
+    this.messages = [];
+
+    this.getMessages = function () {
+        return this.messages;
+    };
+    this.pushMessage = function (message, messageOptions) {
+        let defaultOptions = {
+            type: "success",
+            timeout: 3000,
+        };
+        messageOptions = Object.assign(defaultOptions, messageOptions);
+        messageOptions.text = message;
+        messageOptions.remove = (doApply = false, clicked = false) => {
+            if ("onClicked" in messageOptions && clicked) {
+                messageOptions.onClicked();
+            }
+            this.messages = this.messages.filter((m) => m !== messageOptions);
+            this.updateHook(doApply);
+        };
+
+        setTimeout(() => {
+            messageOptions.remove(true);
+        }, messageOptions.timeout);
+        this.messages.push(messageOptions);
+
+        this.updateHook();
+    };
+    this.updateHook = function () {
+        console.log("updateHook");
+    };
 });
